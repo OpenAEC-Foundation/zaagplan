@@ -45,6 +45,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Sleutelcontrole (OPENAEC_API_SLEUTELS); zonder sleutels blijft de API open.
+from toegang import SLEUTELS, maak_controle
+app.middleware("http")(maak_controle(SLEUTELS))
+
 
 # Request logging middleware
 @app.middleware("http")
@@ -115,7 +119,7 @@ def root():
 @app.get("/health")
 def health():
     """Simple health check voor Docker"""
-    return {"status": "ok"}
+    return {"status": "ok", "version": app.version}
 
 
 @app.post("/debug/request")
@@ -291,6 +295,12 @@ def optimize_2d():
         detail="2D optimalisatie via backend is nog in ontwikkeling. "
                "Gebruik de frontend maxrects-packer voor nu."
     )
+
+
+# ============ /v1 (SuperCloud) ============
+
+import api_v1
+api_v1.registreer(health, get_algorithms, optimize_1d, optimize_2d, app)
 
 
 # ============ RUN SERVER ============
